@@ -7,6 +7,8 @@ void testApp::setup(){
 	camHeight 		= 240;
     bDebug = false;
     lastGestureComplete = true;
+    leftGestureDetected = false;
+    rightGestureDetected = false;
     gestureStartTime = 0;
     
     //we can now get back a list of devices. 
@@ -32,12 +34,14 @@ void testApp::setup(){
     
     gradBar.loadImage("gradBar.png");
     handIcon.loadImage("openhand.png");
+    
+    serial.listDevices();
+    serial.setup(0, BAUD_RATE); //open the first device
 }
 
 
 //--------------------------------------------------------------
 void testApp::setupGUI() {
-    
     int maxGridLen = camHeight/MIN_GRID_LEN;
     
     gui.setup();
@@ -52,8 +56,6 @@ void testApp::setupGUI() {
     gui.add(flowGridRes.set("Grid Size", 10, MIN_GRID_LEN, maxGridLen));
     gui.add(gestureThresh.set("Gesture Threshold", 1.5, GESTURE_THRESH_MIN, GESTURE_THRESH_MAX));
     gui.add(gestureTimeOut.set("Gesture Time Out", 0.5, 0, 2));
-    
-    
 }
 //--------------------------------------------------------------
 
@@ -68,24 +70,30 @@ void testApp::setFlowBlur(int & size) {
 }
 
 //--------------------------------------------------------------
-int testApp::getGesture() {
-    int ret = NO_GESTURE;
+void testApp::getGesture() {
     float now = ofGetElapsedTimef();
     lastGestureComplete = (now - gestureStartTime) >= gestureTimeOut.get();
+
     
-    if(aveFlowEased.length() > gestureThresh.get() && lastGestureComplete) {
-        cout << "hi" << endl;
+    if(lastGestureComplete) {
+        curGesture = NO_GESTURE;
+    }
+    
+    if(aveFlow.length() > gestureThresh.get() && lastGestureComplete) {
         gestureStartTime = now;
-        if(aveFlowEased.x > 0) {
+        if(aveFlow.x > 0) {
             ofDrawBitmapString("Gesture Right Detected", ofGetWidth()*0.7,ofGetHeight()*0.1);
-            ret = GESTURE_RIGHT;
-        } else if(aveFlowEased.x < 0) {
+            curGesture = GESTURE_RIGHT;
+            boxCol = ofColor(255,0,0);
+            serial.writeByte('1');
+        } else if(aveFlow.x < 0) {
             ofDrawBitmapString("Gesture Left Detected", ofGetWidth()*0.7,ofGetHeight()*0.1);
-            ret = GESTURE_LEFT;
+            curGesture = GESTURE_LEFT;
+            boxCol = ofColor(0,0,255);
+            serial.writeByte('2');
         }
     }
     
-    return ret;
 }
 
 
@@ -120,25 +128,27 @@ void testApp::update(){
 	if (vidGrabber.isFrameNew()) {
         flow.update(vidGrabber);
         calcAveFlow();
+        getGesture();
     }
 
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    int curGesture = getGesture();
+
     int boxW=300;
     int boxH=300;
-    int rightBoxX = (ofGetWidth()/2) - boxW;
+    int rightBoxX = (ofGetWidth()/2);
     int rightBoxY = ofGetHeight() * 0.5;
-    int leftBoxX = (ofGetWidth()/2);
+    int leftBoxX = (ofGetWidth()/2) - boxW;
     int leftBoxY = ofGetHeight() * 0.5;
     int barX = (ofGetWidth() - gradBar.width)/2;
     int barY = ofGetHeight()*0.9;
     int barH = gradBar.height;
-    int gestureX = ofMap(aveFlowEased.x, MIN_FLOW_VEC_LEN, MAX_FLOW_VEC_LEN, barX, barX+gradBar.width) - handIcon.width/2; //map from flow vector to screen coords of bar
+    int gestureX = ofMap(aveFlow.x, MIN_FLOW_VEC_LEN, MAX_FLOW_VEC_LEN, barX, barX+gradBar.width) - handIcon.width/2; //map from flow vector to screen coords of bar
     int leftThreshX = ofMap(gestureThresh.get(),GESTURE_THRESH_MIN,GESTURE_THRESH_MAX,barX+(gradBar.width/2),barX);
     int rightThreshX = ofMap(gestureThresh.get(),GESTURE_THRESH_MIN,GESTURE_THRESH_MAX,barX+(gradBar.width/2),barX+gradBar.width);
+    int colorInt = (255-75)/gestureTimeOut.get(); //75 is the default gray
 
     
     
@@ -154,22 +164,28 @@ void testApp::draw(){
     ofLine(leftThreshX, barY, leftThreshX, barY+barH);
     
     
+    if(curGesture == GESTURE_LEFT ) {
+        ofSetColor(boxCol);
+//        boxCol.b-=colorInt;
+        ofRect(leftBoxX, leftBoxY, boxW, boxH);
+    } else if(curGesture == GESTURE_RIGHT ) {
+        ofSetColor(boxCol);
+        ofRect(rightBoxX, rightBoxY, boxW, boxH);
+//        boxCol.r-=colorInt;
+    } else {
+        ofSetColor(100, 100, 100);
+        ofRect(rightBoxX, rightBoxY, boxW, boxH);
+        ofRect(leftBoxX, leftBoxY, boxW, boxH);
+    }
     
-//    if(curGesture == GESTURE_RIGHT) {
-//        ofSetColor(255, 0, 0);
-//        ofRect(rightBoxX, rightBoxY, boxW, boxH);
-//    } else if(curGesture == GESTURE_LEFT) {
-//        ofSetColor(0, 0, 255);
-//        ofRect(leftBoxX, leftBoxY, boxW, boxH);
-//    }
-//    
-//    ofSetHexColor(0xffffff);
-    
+    ofSetHexColor(0xffffff);
+
     
     if(bDebug) {
         gui.draw();
-        ofDrawBitmapString("Ave Flow:" + ofToString(aveFlowEased), ofGetWidth()*0.7,ofGetHeight()*0.05);
+        ofDrawBitmapString("Ave Flow Eased:" + ofToString(aveFlowEased), ofGetWidth()*0.7,ofGetHeight()*0.05);
         ofDrawBitmapString("Ave Flow Len:" + ofToString(aveFlowEased.length()), ofGetWidth()*0.7,ofGetHeight()*0.1);
+        ofDrawBitmapString("Ave Flow:" + ofToString(aveFlow), ofGetWidth()*0.7,ofGetHeight()*0.15);
     };
 }
 
@@ -193,6 +209,14 @@ void testApp::keyPressed  (int key){
 	
     if(key == 'd') {
         bDebug = !bDebug;
+    }
+    
+    if(key == '1' ) {
+        serial.writeByte('1');
+    }
+    
+    if(key == '2' ) {
+        serial.writeByte('2');
     }
 	
 }

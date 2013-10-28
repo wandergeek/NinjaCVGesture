@@ -24,7 +24,7 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
         void setFlowBlur(int & size);
         void setFlowSize(int & size);
-        int getGesture();
+        void getGesture();
         void calcAveFlow();
         void drawGestureBar();
         void setupGUI();
@@ -54,5 +54,12 @@ class testApp : public ofBaseApp{
     float gestureStartTime;
      bool bDebug;
     bool lastGestureComplete;
+    bool leftGestureDetected;
+    bool rightGestureDetected;
+    
+    ofColor boxCol;
+    int curGesture;
+    
+    ofSerial serial;
     
 };
