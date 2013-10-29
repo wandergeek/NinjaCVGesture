@@ -158,6 +158,10 @@
 		0105795B1818B3CD003CD46F /* ofxCvHaarFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 010578C01818B3CC003CD46F /* ofxCvHaarFinder.cpp */; };
 		0105795C1818B3CD003CD46F /* ofxCvImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 010578C21818B3CC003CD46F /* ofxCvImage.cpp */; };
 		0105795D1818B3CD003CD46F /* ofxCvShortImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 010578C51818B3CC003CD46F /* ofxCvShortImage.cpp */; };
+		01831B4C181F35BD00E326B4 /* tinyxml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01831B45181F35BD00E326B4 /* tinyxml.cpp */; };
+		01831B4D181F35BD00E326B4 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01831B47181F35BD00E326B4 /* tinyxmlerror.cpp */; };
+		01831B4E181F35BD00E326B4 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01831B48181F35BD00E326B4 /* tinyxmlparser.cpp */; };
+		01831B4F181F35BD00E326B4 /* ofxXmlSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01831B4A181F35BD00E326B4 /* ofxXmlSettings.cpp */; };
 		01C142D21818BD29005BE4B0 /* ofxBaseGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C142C11818BD29005BE4B0 /* ofxBaseGui.cpp */; };
 		01C142D31818BD29005BE4B0 /* ofxButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C142C31818BD29005BE4B0 /* ofxButton.cpp */; };
 		01C142D41818BD29005BE4B0 /* ofxGuiGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 01C142C61818BD29005BE4B0 /* ofxGuiGroup.cpp */; };
@@ -467,6 +471,12 @@
 		010578C61818B3CC003CD46F /* ofxCvShortImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxCvShortImage.h; sourceTree = "<group>"; };
 		010578C71818B3CC003CD46F /* ofxOpenCv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxOpenCv.h; sourceTree = "<group>"; };
 		016B89F01818F6750053B41A /* ninjaConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ninjaConstants.h; sourceTree = "<group>"; };
+		01831B45181F35BD00E326B4 /* tinyxml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxml.cpp; sourceTree = "<group>"; };
+		01831B46181F35BD00E326B4 /* tinyxml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyxml.h; sourceTree = "<group>"; };
+		01831B47181F35BD00E326B4 /* tinyxmlerror.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxmlerror.cpp; sourceTree = "<group>"; };
+		01831B48181F35BD00E326B4 /* tinyxmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxmlparser.cpp; sourceTree = "<group>"; };
+		01831B4A181F35BD00E326B4 /* ofxXmlSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxXmlSettings.cpp; sourceTree = "<group>"; };
+		01831B4B181F35BD00E326B4 /* ofxXmlSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxXmlSettings.h; sourceTree = "<group>"; };
 		01C142C11818BD29005BE4B0 /* ofxBaseGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBaseGui.cpp; sourceTree = "<group>"; };
 		01C142C21818BD29005BE4B0 /* ofxBaseGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBaseGui.h; sourceTree = "<group>"; };
 		01C142C31818BD29005BE4B0 /* ofxButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxButton.cpp; sourceTree = "<group>"; };
@@ -1200,6 +1210,36 @@
 			path = src;
 			sourceTree = "<group>";
 		};
+		01831B43181F35BD00E326B4 /* ofxXmlSettings */ = {
+			isa = PBXGroup;
+			children = (
+				01831B44181F35BD00E326B4 /* libs */,
+				01831B49181F35BD00E326B4 /* src */,
+			);
+			name = ofxXmlSettings;
+			path = ../../../addons/ofxXmlSettings;
+			sourceTree = "<group>";
+		};
+		01831B44181F35BD00E326B4 /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				01831B45181F35BD00E326B4 /* tinyxml.cpp */,
+				01831B46181F35BD00E326B4 /* tinyxml.h */,
+				01831B47181F35BD00E326B4 /* tinyxmlerror.cpp */,
+				01831B48181F35BD00E326B4 /* tinyxmlparser.cpp */,
+			);
+			path = libs;
+			sourceTree = "<group>";
+		};
+		01831B49181F35BD00E326B4 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				01831B4A181F35BD00E326B4 /* ofxXmlSettings.cpp */,
+				01831B4B181F35BD00E326B4 /* ofxXmlSettings.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		01C142BF1818BD29005BE4B0 /* ofxGui */ = {
 			isa = PBXGroup;
 			children = (
@@ -1236,6 +1276,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				01831B43181F35BD00E326B4 /* ofxXmlSettings */,
 				01C142BF1818BD29005BE4B0 /* ofxGui */,
 				010577B41818B3CB003CD46F /* ofxOpenCv */,
 				010572D21818A0B2003CD46F /* ofxOpticalFlowLK */,
@@ -1425,6 +1466,10 @@
 				01C142D71818BD29005BE4B0 /* ofxSlider.cpp in Sources */,
 				01C142D81818BD29005BE4B0 /* ofxSliderGroup.cpp in Sources */,
 				01C142D91818BD29005BE4B0 /* ofxToggle.cpp in Sources */,
+				01831B4C181F35BD00E326B4 /* tinyxml.cpp in Sources */,
+				01831B4D181F35BD00E326B4 /* tinyxmlerror.cpp in Sources */,
+				01831B4E181F35BD00E326B4 /* tinyxmlparser.cpp in Sources */,
+				01831B4F181F35BD00E326B4 /* ofxXmlSettings.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

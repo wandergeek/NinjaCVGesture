@@ -4,6 +4,7 @@
 #include "ofxOpticalFlowLK.h"
 #include "ofxGui.h"
 #include "ninjaConstants.h"
+#include "ofxXmlSettings.h"
 
 class testApp : public ofBaseApp{
 	
@@ -12,7 +13,6 @@ class testApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
-		
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
@@ -28,38 +28,42 @@ class testApp : public ofBaseApp{
         void calcAveFlow();
         void drawGestureBar();
         void setupGUI();
+        void buttonSaveChanged();
+        void buttonLoadChanged();
+        void loadSettings();
     
 		ofVideoGrabber 		vidGrabber;
 		unsigned char * 	videoInverted;
 		ofTexture			videoTexture;
 		int 				camWidth;
 		int 				camHeight;
-    ofPoint             aveFlow;
-    ofPoint             aveFlowEased;
-    ofImage             gradBar;
-    ofImage             handIcon;
+        ofPoint             aveFlow;
+        ofPoint             aveFlowEased;
+        ofPoint             curFlow;
+        ofImage             gradBar;
+        ofImage             handIcon;
+        ofxOpticalFlowLK flow;
+        ofxXmlSettings settings;
+        ofxPanel gui;
+        ofParameter<int> optiFlowSize;
+        ofParameter<int> lineScale;
+        ofParameter<int> drawRes;
+        ofParameter<int> numAveFrames;
+        ofParameter<int> optiFlowBlur;
+        ofParameter<int> flowGridRes;
+        ofParameter<float> gestureThresh;
+        ofParameter<float> gestureTimeOut;
+        ofxButton buttonSave;
+        ofxButton buttonLoad;
     
-    
-    ofxOpticalFlowLK flow;
-    ofxPanel gui;
-    ofParameter<int> optiFlowSize;
-    ofParameter<int> lineScale;
-    ofParameter<int> drawRes;
-    ofParameter<int> numAveFrames;
-    ofParameter<int> optiFlowBlur;
-    ofParameter<int> flowGridRes;
-    ofParameter<float> gestureThresh;
-    ofParameter<float> gestureTimeOut;
-
-    float gestureStartTime;
-     bool bDebug;
-    bool lastGestureComplete;
-    bool leftGestureDetected;
-    bool rightGestureDetected;
-    
-    ofColor boxCol;
-    int curGesture;
-    
-    ofSerial serial;
-    
+        float gestureStartTime;
+         bool bDebug;
+        bool lastGestureComplete;
+        bool leftGestureDetected;
+        bool rightGestureDetected;
+        ofColor boxCol;
+        int curGesture;
+        int curFrame;
+        int MODE;
+        ofSerial serial;
 };

@@ -1,0 +1,10 @@
+<settings>
+    <optiFlowSize>10</optiFlowSize>
+    <optiFlowBlur>10</optiFlowBlur>
+    <lineScale>5</lineScale>
+    <drawRes>10</drawRes>
+    <numAveFrames>3</numAveFrames>
+    <flowGridRes>10</flowGridRes>
+    <gestureThresh>1.500000000</gestureThresh>
+    <gestureTimeOut>2.000000000</gestureTimeOut>
+</settings>

@@ -3,6 +3,10 @@
 //--------------------------------------------------------------
 void testApp::setup(){
 	
+//////////////////////////////////////////////////////
+    MODE = FRAME_AVE_MODE;
+//////////////////////////////////////////////////////
+    
 	camWidth 		= 320;	// try to grab at this size. 
 	camHeight 		= 240;
     bDebug = false;
@@ -10,8 +14,9 @@ void testApp::setup(){
     leftGestureDetected = false;
     rightGestureDetected = false;
     gestureStartTime = 0;
+    curFlow = ofPoint(0,0);
     
-    //we can now get back a list of devices. 
+    cout << "Listing available video devices:" << endl;
 	vector<ofVideoDevice> devices = vidGrabber.listDevices();
 	
     for(int i = 0; i < devices.size(); i++){
@@ -26,11 +31,11 @@ void testApp::setup(){
 	vidGrabber.setDeviceID(1);
 	vidGrabber.setDesiredFrameRate(60);
 	vidGrabber.initGrabber(camWidth,camHeight);
-
-	ofSetVerticalSync(true);
     flow.setup(camWidth,camHeight);
-
+    ofSetVerticalSync(true);
+    
     setupGUI();
+    loadSettings();
     
     gradBar.loadImage("gradBar.png");
     handIcon.loadImage("openhand.png");
@@ -39,15 +44,11 @@ void testApp::setup(){
     serial.setup(0, BAUD_RATE); //open the first device
 }
 
-
 //--------------------------------------------------------------
 void testApp::setupGUI() {
-    int maxGridLen = camHeight/MIN_GRID_LEN;
     
+    int maxGridLen = camHeight/MIN_GRID_LEN;
     gui.setup();
-    optiFlowSize.addListener(this, &testApp::setFlowSize);
-    optiFlowBlur.addListener(this, &testApp::setFlowBlur);
-    optiFlowBlur.addListener(this, &testApp::setFlowBlur);
     gui.add(optiFlowSize.set("Opti Flow Size", 10, 1, 50));
     gui.add(optiFlowBlur.set("Opti Flow Blur", 10, 1, 50));
     gui.add(lineScale.set("Line Scale", 5, 1, 50));
@@ -56,6 +57,13 @@ void testApp::setupGUI() {
     gui.add(flowGridRes.set("Grid Size", 10, MIN_GRID_LEN, maxGridLen));
     gui.add(gestureThresh.set("Gesture Threshold", 1.5, GESTURE_THRESH_MIN, GESTURE_THRESH_MAX));
     gui.add(gestureTimeOut.set("Gesture Time Out", 0.5, 0, 2));
+    gui.add(buttonLoad.setup("Load"));
+    gui.add(buttonSave.setup("Save"));
+    buttonSave.addListener(this, &testApp::buttonSaveChanged);
+    buttonLoad.addListener(this, &testApp::buttonLoadChanged);
+    optiFlowSize.addListener(this, &testApp::setFlowSize);
+    optiFlowBlur.addListener(this, &testApp::setFlowBlur);
+    optiFlowBlur.addListener(this, &testApp::setFlowBlur);
 }
 //--------------------------------------------------------------
 
@@ -70,23 +78,55 @@ void testApp::setFlowBlur(int & size) {
 }
 
 //--------------------------------------------------------------
+
+void testApp::loadSettings() {
+    settings.loadFile("settings.xml");
+    optiFlowBlur.set(settings.getValue("settings:optiFlowBlur", 10));
+    optiFlowSize.set(settings.getValue("settings:optiFlowSize", 10));
+    lineScale.set(settings.getValue("settings:lineScale", 5));
+    drawRes.set(settings.getValue("settings:drawRes", 10));
+    numAveFrames.set(settings.getValue("settings:numAveFrames", 3));
+    flowGridRes.set(settings.getValue("settings:flowGridRes", 10));
+    gestureThresh.set(settings.getValue("settings:gestureThresh", 1.5));
+    gestureTimeOut.set(settings.getValue("settings:gestureTimeOut", 0.5));
+}
+
+//--------------------------------------------------------------
+
+void testApp::buttonLoadChanged() {
+    loadSettings();
+}
+
+//--------------------------------------------------------------
+void testApp::buttonSaveChanged() {
+    settings.setValue("settings:optiFlowSize", optiFlowSize.get());
+    settings.setValue("settings:optiFlowBlur", optiFlowBlur.get());
+    settings.setValue("settings:lineScale", lineScale.get());
+    settings.setValue("settings:drawRes", drawRes.get());
+    settings.setValue("settings:numAveFrames", numAveFrames.get());
+    settings.setValue("settings:flowGridRes", flowGridRes.get());
+    settings.setValue("settings:gestureThresh", gestureThresh.get());
+    settings.setValue("settings:gestureTimeOut", gestureTimeOut.get());
+    settings.saveFile("settings.xml");
+    
+}
+//--------------------------------------------------------------
 void testApp::getGesture() {
     float now = ofGetElapsedTimef();
     lastGestureComplete = (now - gestureStartTime) >= gestureTimeOut.get();
-
     
     if(lastGestureComplete) {
         curGesture = NO_GESTURE;
     }
     
-    if(aveFlow.length() > gestureThresh.get() && lastGestureComplete) {
+    if(aveFlow.length() > gestureThresh.get() && lastGestureComplete) { //only actuate a gesture when flow vector is long enough and the last gesture has finished
         gestureStartTime = now;
-        if(aveFlow.x > 0) {
+        if(aveFlow.x < 0) {
             ofDrawBitmapString("Gesture Right Detected", ofGetWidth()*0.7,ofGetHeight()*0.1);
             curGesture = GESTURE_RIGHT;
             boxCol = ofColor(255,0,0);
             serial.writeByte('1');
-        } else if(aveFlow.x < 0) {
+        } else if(aveFlow.x > 0) {
             ofDrawBitmapString("Gesture Left Detected", ofGetWidth()*0.7,ofGetHeight()*0.1);
             curGesture = GESTURE_LEFT;
             boxCol = ofColor(0,0,255);
@@ -105,6 +145,7 @@ void testApp::calcAveFlow() {
     int numY = camHeight/gridEdgeLen;
     ofPoint ave;
     int numFlows = 0;
+    int curFrame = 0;
     
     for(int i=0; i<numX; i++) {
         for(int j=0; j<numY; j++) {
@@ -113,11 +154,21 @@ void testApp::calcAveFlow() {
             numFlows++;
         }
     }
+    
     ave/=numFlows;
+
+    if(MODE == FRAME_AVE_MODE) {
+        curFlow += ave;
+        if(curFrame % numAveFrames.get() == 0) {
+            aveFlow = curFlow/numAveFrames.get();
+            curFlow = ofPoint(0);
+        }
+    } else if(MODE == EASING_MODE) {
+        aveFlow = ave;
+        aveFlowEased += (aveFlow - aveFlowEased) * 0.1;
+    }
     
-    aveFlow = ave;
     
-    aveFlowEased += (aveFlow - aveFlowEased) * 0.1;
 }
 
 //--------------------------------------------------------------
